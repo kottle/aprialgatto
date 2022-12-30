@@ -1,0 +1,10 @@
+[Unit]
+Description=Apri Gatto
+After=multi-user.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/robot/main
