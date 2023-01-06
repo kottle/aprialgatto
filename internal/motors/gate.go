@@ -1,4 +1,4 @@
-package internal
+package motors
 
 import (
 	"fmt"
@@ -31,20 +31,22 @@ func NewGate(out1 string, out2 string) *Gate {
 }
 
 func (g *Gate) init() {
+	g.exec(func(m *ev3dev.TachoMotor) {
+		m.Command("reset").SetSpeedSetpoint(100).SetPolarity(ev3dev.Normal)
+	})
 }
 
 func (g *Gate) Open() {
 	log.Debugf("Open\n")
 	g.exec(func(m *ev3dev.TachoMotor) {
-		m.Command("reset").SetSpeedSetpoint(300).SetPolarity(ev3dev.Normal).SetPositionSetpoint(int(-90)).Command("run-to-rel-pos")
+		m.SetPositionSetpoint(int(90)).SetStopAction("hold").Command("run-to-rel-pos")
 	})
 }
 
 func (g *Gate) Close() {
 	log.Debugf("Close\n")
-
 	g.exec(func(m *ev3dev.TachoMotor) {
-		m.Command("reset").SetSpeedSetpoint(300).SetPolarity(ev3dev.Normal).SetPositionSetpoint(int(90)).Command("run-to-rel-pos")
+		m.SetPositionSetpoint(int(-160)).SetStopAction("brake").Command("run-to-rel-pos")
 	})
 }
 

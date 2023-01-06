@@ -1,4 +1,4 @@
-package internal
+package sensors
 
 import (
 	"context"
