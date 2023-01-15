@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+
+option go_package = "./grpc";
+package rpc.detection;
+
+
+service DetectionService {
+    rpc DetectedObject(DetectReq) returns (DetectRes) {}
+
+}
+
+message DetectReq {
+    string object = 1;
+}
+
+message DetectRes {
+}

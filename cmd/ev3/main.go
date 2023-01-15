@@ -16,8 +16,9 @@ func main() {
 	ev3.LCD.Init(true)
 	defer ev3.LCD.Close()
 
-	testGate()
+	/*testGate()
 	testColors()
+	*/
 	/*
 		proximity := internal.NewProximity("in1")
 		proximity.Init(20)
