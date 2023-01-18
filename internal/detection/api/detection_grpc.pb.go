@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DetectionServiceClient interface {
 	DetectedObject(ctx context.Context, in *DetectReq, opts ...grpc.CallOption) (*DetectRes, error)
+	OnDetectObject(ctx context.Context, in *OnDetectRes, opts ...grpc.CallOption) (DetectionService_OnDetectObjectClient, error)
 }
 
 type detectionServiceClient struct {
@@ -42,11 +43,44 @@ func (c *detectionServiceClient) DetectedObject(ctx context.Context, in *DetectR
 	return out, nil
 }
 
+func (c *detectionServiceClient) OnDetectObject(ctx context.Context, in *OnDetectRes, opts ...grpc.CallOption) (DetectionService_OnDetectObjectClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DetectionService_ServiceDesc.Streams[0], "/rpc.detection.DetectionService/OnDetectObject", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &detectionServiceOnDetectObjectClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type DetectionService_OnDetectObjectClient interface {
+	Recv() (*OnDetectReq, error)
+	grpc.ClientStream
+}
+
+type detectionServiceOnDetectObjectClient struct {
+	grpc.ClientStream
+}
+
+func (x *detectionServiceOnDetectObjectClient) Recv() (*OnDetectReq, error) {
+	m := new(OnDetectReq)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // DetectionServiceServer is the server API for DetectionService service.
 // All implementations must embed UnimplementedDetectionServiceServer
 // for forward compatibility
 type DetectionServiceServer interface {
 	DetectedObject(context.Context, *DetectReq) (*DetectRes, error)
+	OnDetectObject(*OnDetectRes, DetectionService_OnDetectObjectServer) error
 	mustEmbedUnimplementedDetectionServiceServer()
 }
 
@@ -56,6 +90,9 @@ type UnimplementedDetectionServiceServer struct {
 
 func (UnimplementedDetectionServiceServer) DetectedObject(context.Context, *DetectReq) (*DetectRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DetectedObject not implemented")
+}
+func (UnimplementedDetectionServiceServer) OnDetectObject(*OnDetectRes, DetectionService_OnDetectObjectServer) error {
+	return status.Errorf(codes.Unimplemented, "method OnDetectObject not implemented")
 }
 func (UnimplementedDetectionServiceServer) mustEmbedUnimplementedDetectionServiceServer() {}
 
@@ -88,6 +125,27 @@ func _DetectionService_DetectedObject_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DetectionService_OnDetectObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(OnDetectRes)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(DetectionServiceServer).OnDetectObject(m, &detectionServiceOnDetectObjectServer{stream})
+}
+
+type DetectionService_OnDetectObjectServer interface {
+	Send(*OnDetectReq) error
+	grpc.ServerStream
+}
+
+type detectionServiceOnDetectObjectServer struct {
+	grpc.ServerStream
+}
+
+func (x *detectionServiceOnDetectObjectServer) Send(m *OnDetectReq) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // DetectionService_ServiceDesc is the grpc.ServiceDesc for DetectionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +158,12 @@ var DetectionService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DetectionService_DetectedObject_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "OnDetectObject",
+			Handler:       _DetectionService_OnDetectObject_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "detection.proto",
 }
