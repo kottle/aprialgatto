@@ -4,12 +4,17 @@ import (
 	"os"
 	"sync"
 
+	"github.com/asaskevich/EventBus"
+	evbus "github.com/asaskevich/EventBus"
 	log "github.com/sirupsen/logrus"
 )
+
+var OBJECT_NEAR string = "obj_near"
 
 var lock = &sync.Mutex{}
 
 type core struct {
+	bus evbus.Bus
 }
 
 var coreInstance *core
@@ -27,8 +32,27 @@ func GetCore() *core {
 }
 
 func (c *core) Init() {
-	log.SetFormatter(&log.TextFormatter{})
-	log.SetOutput(os.Stdout)
+	// open a file
+	f, err := os.OpenFile("aprialgatto.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+
+	// don't forget to close it
+	defer f.Close()
+
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
+	// Output to stderr instead of stdout, could also be a file.
+	log.SetOutput(f)
+
+	// Only log the warning severity or above.
 	log.SetLevel(log.TraceLevel)
 
+	c.bus = EventBus.New()
+}
+
+func (c *core) GetEventBus() evbus.Bus {
+	return c.bus
 }

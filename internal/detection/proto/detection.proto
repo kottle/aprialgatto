@@ -1,12 +1,13 @@
 syntax = "proto3";
 
 
-option go_package = "./grpc";
+option go_package = "./api";
 package rpc.detection;
 
 
 service DetectionService {
     rpc DetectedObject(DetectReq) returns (DetectRes) {}
+    rpc OnDetectObject(OnDetectRes) returns (stream OnDetectReq) {}
 
 }
 
@@ -15,4 +16,11 @@ message DetectReq {
 }
 
 message DetectRes {
+}
+
+
+message OnDetectReq {
+}
+
+message OnDetectRes {
 }

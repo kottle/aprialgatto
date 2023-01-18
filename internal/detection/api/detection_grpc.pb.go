@@ -4,7 +4,7 @@
 // - protoc             v3.21.6
 // source: detection.proto
 
-package grpc
+package api
 
 import (
 	context "context"
