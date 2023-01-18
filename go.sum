@@ -5,8 +5,6 @@ github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef/go.mod h1:JS7h
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/electricbubble/gadb v0.0.7 h1:fxvVLVNs3IFKuYAEXDF2tDZUjT9jNCltoTSirjM5dgo=
-github.com/electricbubble/gadb v0.0.7/go.mod h1:3293YJ6OWHv/Q6NA5dwSbK43MbmYm8+Vz2d7h5J3IA8=
 github.com/ev3go/ev3 v0.0.0-20180809222216-71c98163af71/go.mod h1:YBb2YEFMxoLDpwFOG9ZGhmvQp049IwkdzVw+xoBUpCc=
 github.com/ev3go/ev3 v0.0.0-20201120201243-08057d63453c h1:dIyD31Dvrp06QWpmvKP2X8DFU1lc6eiaaorT5vKb4as=
 github.com/ev3go/ev3 v0.0.0-20201120201243-08057d63453c/go.mod h1:T+a1klTYOm6mIoNh46+SsgwnJuE9FYh8acqYMJyjNVM=
@@ -42,6 +40,8 @@ golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.5.0 h1:OLmvp0KP+FVG99Ct/qFiL/Fhk4zp4QQnZ7b2U+5piUM=
 golang.org/x/text v0.5.0/go.mod h1:mrYo+phRRbMaCq/xk9113O4dZlRixOauAjOtrjsXDZ8=
 golang.org/x/tools v0.0.0-20190226205152-f727befe758c/go.mod h1:9Yl7xja0Znq3iFh3HoIrodX9oNMXvdceNzlUR8zjMvY=
+golang.org/x/tools v0.1.12 h1:VveCTK38A2rkS8ZqFY25HIDFscX5X9OoEhJd3quQmXU=
+golang.org/x/tools v0.1.12/go.mod h1:hNGJHUnrk76NpqgfD5Aqm5Crs+Hm0VOH/i9J2+nxYbc=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
 google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 h1:a2S6M0+660BgMNl++4JPlcAO/CjkqYItDEZwkoDQK7c=
