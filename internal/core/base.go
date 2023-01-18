@@ -33,13 +33,10 @@ func GetCore() *core {
 
 func (c *core) Init() {
 	// open a file
-	f, err := os.OpenFile("aprialgatto.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	f, err := os.OpenFile("/home/robot/aprialgatto.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
-
-	// don't forget to close it
-	defer f.Close()
 
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
