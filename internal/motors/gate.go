@@ -2,6 +2,8 @@ package motors
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -32,22 +34,55 @@ func NewGate(out1 string, out2 string) *Gate {
 
 func (g *Gate) init() {
 	g.exec(func(m *ev3dev.TachoMotor) {
-		m.Command("reset").SetSpeedSetpoint(100).SetPolarity(ev3dev.Normal)
+		m.Command("reset").SetStopAction("hold")
 	})
+}
+
+func (g *Gate) Stop() {
+	log.Debugf("Stop\n")
+	g.exec(func(m *ev3dev.TachoMotor) {
+		m.SetStopAction("hold").Command("stop")
+	})
+}
+
+func wStop(motor *ev3dev.TachoMotor, g *sync.WaitGroup) {
+	log.Debugf("routine: %s\n", motor.String())
+	pos := 0
+	for {
+		p, _ := motor.Position()
+		log.Infof("%s pos: %d %d\n", motor.String(), pos, p)
+		if pos == p {
+			log.Infof("%s stop!\n", motor.String())
+			motor.Command("stop")
+			g.Done()
+			return
+		}
+		time.Sleep(time.Second * 1)
+		pos = p
+	}
 }
 
 func (g *Gate) Open() {
 	log.Debugf("Open\n")
+	wg := sync.WaitGroup{}
 	g.exec(func(m *ev3dev.TachoMotor) {
-		m.SetPositionSetpoint(int(90)).SetStopAction("hold").Command("run-to-rel-pos")
+		log.Debugf("Open: %s\n", m.String())
+		m.SetSpeedSetpoint(100).Command("run-forever")
+		wg.Add(1)
+		go wStop(m, &wg)
 	})
+	wg.Wait()
 }
 
 func (g *Gate) Close() {
 	log.Debugf("Close\n")
+	wg := sync.WaitGroup{}
 	g.exec(func(m *ev3dev.TachoMotor) {
-		m.SetPositionSetpoint(int(-160)).SetStopAction("brake").Command("run-to-rel-pos")
+		m.SetSpeedSetpoint(-100).Command("run-forever")
+		wg.Add(1)
+		go wStop(m, &wg)
 	})
+	wg.Wait()
 }
 
 func (g *Gate) exec(callback func(m *ev3dev.TachoMotor)) {

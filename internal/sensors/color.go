@@ -1,27 +1,65 @@
 package sensors
 
 import (
+	"context"
 	"fmt"
+	"strconv"
+	"time"
 
+	"github.com/aprialgatto/internal/core"
+	"github.com/aprialgatto/internal/utils"
 	"github.com/ev3go/ev3dev"
 	log "github.com/sirupsen/logrus"
 )
 
-type Color struct {
+type ProximityColor struct {
 	sensor    *ev3dev.Sensor
 	threshold int
 }
 
-func (p *Color) Init(r int, g int, b int) {
-	//p.threshold = t
+func (p *ProximityColor) Init(thr int) {
+	p.threshold = thr
+	p.sensor.SetMode("COL-REFLECT")
 }
 
-func NewColor(port string) *Color {
-	p := &Color{}
+func NewProximityColor(port string) *ProximityColor {
+	p := &ProximityColor{}
 	var err error
 	p.sensor, err = ev3dev.SensorFor(fmt.Sprintf("ev3-ports:%s", port), "lego-ev3-color")
-	if err != nil {
-		log.Fatalf("failed to find sensor on %s: %v", port, err)
-	}
+	utils.CheckErr(err, fmt.Sprintf("failed to find sensor on %s", port))
 	return p
+}
+
+func (p *ProximityColor) Run(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Second)
+	foundIt := false
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			v, err := p.sensor.Value(0)
+			if err != nil {
+				log.Errorf("error reading value: %v\n", err)
+				continue
+			}
+			value, err := strconv.Atoi(v)
+			if err != nil {
+				log.Errorf("error reading value: %v\n", err)
+				continue
+			}
+			log.Warnf("proximity value: %d pct\n", value)
+			prevFound := foundIt
+			if p.threshold <= value {
+				foundIt = true
+			} else {
+				foundIt = false
+			}
+			if prevFound != foundIt && foundIt {
+				log.Tracef("send %b\n", foundIt)
+				core.GetCore().GetEventBus().Publish(core.OBJECT_NEAR)
+				log.Tracef("sent\n")
+			}
+		}
+	}
 }
