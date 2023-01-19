@@ -48,7 +48,7 @@ func (p *ProximityColor) Run(ctx context.Context) {
 				log.Errorf("error reading value: %v\n", err)
 				continue
 			}
-			log.Warnf("proximity value: %d pct\n", value)
+			log.Tracef("proximity value: %d pct\n", value)
 			prevFound := foundIt
 			if p.threshold <= value {
 				foundIt = true
@@ -56,9 +56,7 @@ func (p *ProximityColor) Run(ctx context.Context) {
 				foundIt = false
 			}
 			if prevFound != foundIt && foundIt {
-				log.Tracef("send %b\n", foundIt)
 				core.GetCore().GetEventBus().Publish(core.OBJECT_NEAR)
-				log.Tracef("sent\n")
 			}
 		}
 	}

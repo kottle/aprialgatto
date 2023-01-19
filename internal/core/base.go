@@ -10,6 +10,7 @@ import (
 )
 
 var OBJECT_NEAR string = "obj_near"
+var DETECTED_OBJ string = "obj_detected"
 
 var lock = &sync.Mutex{}
 

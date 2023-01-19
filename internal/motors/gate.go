@@ -12,6 +12,7 @@ import (
 
 type Gate struct {
 	motors []*ev3dev.TachoMotor
+	isOpen bool
 }
 
 func NewGate(out1 string, out2 string) *Gate {
@@ -29,6 +30,7 @@ func NewGate(out1 string, out2 string) *Gate {
 	}
 	g.motors = append(g.motors, motor2)
 	g.init()
+	g.isOpen = false
 	return g
 }
 
@@ -63,6 +65,7 @@ func wStop(motor *ev3dev.TachoMotor, g *sync.WaitGroup) {
 }
 
 func (g *Gate) Open() {
+	g.isOpen = true
 	log.Debugf("Open\n")
 	wg := sync.WaitGroup{}
 	g.exec(func(m *ev3dev.TachoMotor) {
@@ -83,10 +86,15 @@ func (g *Gate) Close() {
 		go wStop(m, &wg)
 	})
 	wg.Wait()
+	g.isOpen = false
 }
 
 func (g *Gate) exec(callback func(m *ev3dev.TachoMotor)) {
 	for _, m := range g.motors {
 		callback(m)
 	}
+}
+
+func (g *Gate) IsOpened() bool {
+	return g.isOpen
 }

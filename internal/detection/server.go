@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 
@@ -11,9 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/status"
 )
 
 var cssContext api.DetectionService_OnDetectObjectServer
@@ -46,23 +42,16 @@ func (s *Service) Start() {
 			log.Errorf("error on grp listener: %v", err)
 			return
 		}
-		/*tlsCredentials, err := loadTLSCredentials()
-		if err != nil {
-			log.Fatal("cannot load TLS credentials: ", err)
-		}*/
-
-		grpcServer := grpc.NewServer(
-		//grpc.Creds(tlsCredentials),
-		)
+		grpcServer := grpc.NewServer()
 		api.RegisterDetectionServiceServer(grpcServer, s)
 
 		grpcServer.Serve(lis)
 	}()
 }
 
-func (s *Service) DetectedObject(context.Context, *api.DetectReq) (*api.DetectRes, error) {
-
-	return nil, status.Errorf(codes.Unimplemented, "method DetectedObject not implemented")
+func (s *Service) DetectedObject(ctx context.Context, req *api.DetectReq) (*api.DetectRes, error) {
+	core.GetCore().GetEventBus().Publish(core.DETECTED_OBJ, req.GetObject())
+	return &api.DetectRes{}, nil
 }
 
 func (s *Service) OnDetectObject(res *api.OnDetectRes, css api.DetectionService_OnDetectObjectServer) error {
@@ -84,20 +73,4 @@ func onObjectNear() {
 	if cssContext != nil {
 		cssContext.Send(&api.OnDetectReq{})
 	}
-}
-
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	// Load server's certificate and private key
-	serverCert, err := tls.LoadX509KeyPair("/home/robot/cert/ca-cert.pem", "/home/robot/cert/server-key.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		Certificates: []tls.Certificate{serverCert},
-		ClientAuth:   tls.NoClientCert,
-	}
-
-	return credentials.NewTLS(config), nil
 }
