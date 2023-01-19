@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/aprialgatto/internal/core"
 	server "github.com/aprialgatto/internal/detection"
@@ -21,21 +23,21 @@ func init() {
 var gate *motors.Gate
 
 func main() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	ev3.LCD.Init(true)
 	defer ev3.LCD.Close()
+
 	service := server.NewService()
 	service.Start()
 	gate = motors.NewGate("outA", "outB")
 	proximity := sensors.NewProximityColor("in2")
 	proximity.Init(2)
-
 	ctx, cancel := context.WithCancel(context.Background())
-	ticker := time.NewTicker(5 * time.Minute)
-
 	go proximity.Run(ctx)
 
-	<-ticker.C
+	<-sigs
 	cancel()
 }
 
