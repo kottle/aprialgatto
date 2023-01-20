@@ -5,14 +5,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/aprialgatto/internal/core"
 	server "github.com/aprialgatto/internal/detection"
 	"github.com/aprialgatto/internal/motors"
 	"github.com/aprialgatto/internal/sensors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/ev3go/ev3"
 )
 
 func init() {
@@ -26,12 +25,10 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	ev3.LCD.Init(true)
-	defer ev3.LCD.Close()
-
 	service := server.NewService()
 	service.Start()
 	gate = motors.NewGate("outA", "outB")
+	gate.Close()
 	proximity := sensors.NewProximityColor("in2")
 	proximity.Init(2)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -43,8 +40,13 @@ func main() {
 
 func detectedObject(object string) {
 	logrus.Infof("Detected objet: %s", object)
-	if !gate.IsOpened() && object == "person" {
+	if !gate.IsOpened() && (object == "person" || object == "cat") {
 		gate.Open()
+		go func() {
+			ticker := time.NewTicker(5 * time.Minute)
+			<-ticker.C
+			gate.Close()
+		}()
 	}
 	if gate.IsOpened() && object == "dog" {
 		gate.Close()

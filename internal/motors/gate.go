@@ -65,6 +65,9 @@ func wStop(motor *ev3dev.TachoMotor, g *sync.WaitGroup) {
 }
 
 func (g *Gate) Open() {
+	if g.isOpen {
+		return
+	}
 	g.isOpen = true
 	log.Debugf("Open\n")
 	wg := sync.WaitGroup{}
@@ -78,6 +81,9 @@ func (g *Gate) Open() {
 }
 
 func (g *Gate) Close() {
+	if !g.isOpen {
+		return
+	}
 	log.Debugf("Close\n")
 	wg := sync.WaitGroup{}
 	g.exec(func(m *ev3dev.TachoMotor) {
