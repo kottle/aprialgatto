@@ -1,11 +1,13 @@
 package core
 
 import (
+	"io"
 	"os"
 	"sync"
 
 	"github.com/asaskevich/EventBus"
 	evbus "github.com/asaskevich/EventBus"
+	"github.com/natefinch/lumberjack"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,17 +35,16 @@ func GetCore() *core {
 }
 
 func (c *core) Init() {
-	// open a file
-	f, err := os.OpenFile("/home/robot/aprialgatto.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+
+	ljack := &lumberjack.Logger{
+		Filename:   "/home/robot/logs/aprialgatto.log",
+		MaxSize:    2, // megabytes
+		MaxBackups: 20,
+		MaxAge:     7,    //days
+		Compress:   true, // disabled by default
 	}
-
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-
-	// Output to stderr instead of stdout, could also be a file.
-	log.SetOutput(f)
+	mWriter := io.MultiWriter(os.Stderr, ljack)
+	log.SetOutput(mWriter)
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.TraceLevel)
