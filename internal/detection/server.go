@@ -7,10 +7,31 @@ import (
 
 	"github.com/aprialgatto/internal/core"
 	"github.com/aprialgatto/internal/detection/api"
+	"github.com/aprialgatto/internal/utils/events"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+func grpcAuthFunc(ctx context.Context) (context.Context, error) {
+	token, err := grpc_auth.AuthFromMD(ctx, "bearer")
+	if err != nil {
+		return nil, err
+	}
+	reg, res := events.Pub(core.VerifyAuthToken, core.NewVerifyAuthToken(token))
+	if reg == 1 {
+		result := <-res
+		if result.Error != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", result.Error)
+		}
+	}
+
+	return ctx, nil
+}
 
 var cssContext api.DetectionService_OnDetectObjectServer
 
@@ -42,7 +63,15 @@ func (s *Service) Start() {
 			log.Errorf("error on grp listener: %v", err)
 			return
 		}
-		grpcServer := grpc.NewServer()
+		var grpcServer *grpc.Server
+		if core.ENABLE_AUTH {
+			grpcServer = grpc.NewServer(
+				grpc.StreamInterceptor(grpc_auth.StreamServerInterceptor(grpcAuthFunc)),
+				grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(grpcAuthFunc)),
+			)
+		} else {
+			grpcServer = grpc.NewServer()
+		}
 		api.RegisterDetectionServiceServer(grpcServer, s)
 
 		grpcServer.Serve(lis)

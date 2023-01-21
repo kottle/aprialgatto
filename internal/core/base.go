@@ -1,23 +1,28 @@
 package core
 
 import (
-	"io"
-	"os"
 	"sync"
 
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/auth"
+	"firebase.google.com/go/messaging"
 	"github.com/asaskevich/EventBus"
 	evbus "github.com/asaskevich/EventBus"
-	"github.com/natefinch/lumberjack"
-	log "github.com/sirupsen/logrus"
 )
 
+var ENABLE_AUTH bool = false
 var OBJECT_NEAR string = "obj_near"
 var DETECTED_OBJ string = "obj_detected"
 
 var lock = &sync.Mutex{}
 
 type core struct {
-	bus evbus.Bus
+	bus     evbus.Bus
+	app     *firebase.App
+	client  *firestore.Client
+	mclient *messaging.Client
+	aclient *auth.Client
 }
 
 var coreInstance *core
@@ -36,20 +41,11 @@ func GetCore() *core {
 
 func (c *core) Init() {
 
-	ljack := &lumberjack.Logger{
-		Filename:   "/home/robot/logs/aprialgatto.log",
-		MaxSize:    2, // megabytes
-		MaxBackups: 20,
-		MaxAge:     7,    //days
-		Compress:   true, // disabled by default
-	}
-	mWriter := io.MultiWriter(os.Stderr, ljack)
-	log.SetOutput(mWriter)
-
-	// Only log the warning severity or above.
-	log.SetLevel(log.TraceLevel)
-
 	c.bus = EventBus.New()
+
+	c.loggerInit()
+	c.firebaseInit()
+
 }
 
 func (c *core) GetEventBus() evbus.Bus {
