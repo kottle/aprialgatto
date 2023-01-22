@@ -42,6 +42,8 @@ func main() {
 func detectedObject(object string) {
 	logrus.Infof("Detected objet: %s", object)
 	if !gate.IsOpened() && (object == "person" || object == "cat") {
+		core.GetCore().SendMessage("detectObject", "detect_ok")
+
 		gate.Open()
 		go func() {
 			ticker := time.NewTicker(5 * time.Minute)
@@ -50,6 +52,7 @@ func detectedObject(object string) {
 		}()
 	}
 	if gate.IsOpened() && object == "dog" {
+		core.GetCore().SendMessage("detectObject", "detect_ok")
 		gate.Close()
 	}
 }

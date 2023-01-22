@@ -97,9 +97,11 @@ func (s *Service) OnDetectObject(res *api.OnDetectRes, css api.DetectionService_
 }
 
 func onObjectNear() {
-	// gate.Open()
-	logrus.Infof("onObjectNear")
-	if cssContext != nil {
-		cssContext.Send(&api.OnDetectReq{})
-	}
+	core.GetCore().SendMessage("detectObject", "detect")
+	/*	// gate.Open()
+		logrus.Infof("onObjectNear")
+		if cssContext != nil {
+			cssContext.Send(&api.OnDetectReq{})
+		}
+	*/
 }

@@ -11,7 +11,7 @@ import (
 
 func (c *core) loggerInit() {
 	ljack := &lumberjack.Logger{
-		Filename:   "logs/aprialgatto.log",
+		Filename:   "/home/robot/logs/aprialgatto.log",
 		MaxSize:    2, // megabytes
 		MaxBackups: 20,
 		MaxAge:     7,    //days

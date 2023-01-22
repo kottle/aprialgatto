@@ -18,6 +18,7 @@ var DETECTED_OBJ string = "obj_detected"
 var lock = &sync.Mutex{}
 
 type core struct {
+	sync.Mutex
 	bus     evbus.Bus
 	app     *firebase.App
 	client  *firestore.Client
