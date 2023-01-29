@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/ev3go/ev3dev"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
-func wStop(motor *ev3dev.TachoMotor, g *sync.WaitGroup) {
+func wStop(logger logrus.Entry, motor *ev3dev.TachoMotor, g *sync.WaitGroup) {
 	g.Add(1)
 	log.Debugf("routine: %s\n", motor.String())
 	pos := -10

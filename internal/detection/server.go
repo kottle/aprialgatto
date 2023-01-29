@@ -40,6 +40,8 @@ type Service struct {
 
 	running   bool
 	ipaddress string
+
+	logger logrus.Entry
 }
 
 func NewService() *Service {
@@ -51,7 +53,9 @@ func NewService() *Service {
 	srv.ipaddress = fmt.Sprintf("%s:%d", "0.0.0.0", 5555)
 
 	core.GetCore().GetEventBus().Subscribe(core.OBJECT_NEAR, onObjectNear)
-
+	srv.logger = *logrus.WithFields(log.Fields{
+		"service": "detection",
+	})
 	return srv
 }
 
@@ -60,7 +64,7 @@ func (s *Service) Start() {
 	go func() {
 		lis, err := net.Listen("tcp", s.ipaddress)
 		if err != nil {
-			log.Errorf("error on grp listener: %v", err)
+			s.logger.Errorf("error on grp listener: %v", err)
 			return
 		}
 		var grpcServer *grpc.Server
@@ -84,13 +88,13 @@ func (s *Service) DetectedObject(ctx context.Context, req *api.DetectReq) (*api.
 }
 
 func (s *Service) OnDetectObject(res *api.OnDetectRes, css api.DetectionService_OnDetectObjectServer) error {
-	logrus.Infof(">>>>>>>>>>>>>>>OnDetectObject<<<<<<<<<<<<<<<<<<<")
+	s.logger.Infof(">>>>>>>>>>>>>>>OnDetectObject<<<<<<<<<<<<<<<<<<<")
 
 	cssContext = css
 	for {
 		select {
 		case <-css.Context().Done():
-			logrus.Infof("on detect object closes")
+			s.logger.Infof("on detect object closes")
 			return nil
 		}
 	}

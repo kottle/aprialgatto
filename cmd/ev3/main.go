@@ -37,16 +37,18 @@ func main() {
 	defer gate.Reset()
 
 	service := detection.NewService()
-	proximity := sensors.NewProximityColor("in2")
+	colorproximity := sensors.NewProximityColor("in2")
+	irledproximity := sensors.NewProximity("in1") //controllo che il gatto stia mangiando prima di chiudere
 
 	service.Start()
 	gate.Close()
 
-	proximity.Init(2)
+	colorproximity.Init(2)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go proximity.Run(ctx)
+	go colorproximity.Run(ctx)
+	go irledproximity.Run(ctx)
 	<-sigs
 }
 func openCamera() {

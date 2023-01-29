@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ev3go/ev3dev"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,10 +14,14 @@ var velocity int = 100
 type Flipper struct {
 	motor  *ev3dev.TachoMotor
 	isOpen bool
+	logger logrus.Entry
 }
 
 func NewFlipper(out1 string) *Flipper {
 	f := &Flipper{}
+	f.logger = *logrus.WithFields(log.Fields{
+		"gate": "lego-ev3-l-motor",
+	})
 	var err error
 	f.motor, err = ev3dev.TachoMotorFor(fmt.Sprintf("ev3-ports:%s", out1), "lego-ev3-m-motor")
 	if err != nil {
@@ -32,7 +37,7 @@ func (f *Flipper) init() {
 }
 
 func (f *Flipper) Stop() {
-	log.Debugf("Stop\n")
+	f.logger.Debugf("Stop\n")
 	f.motor.SetStopAction("hold").Command("stop")
 }
 
@@ -41,20 +46,20 @@ func (f *Flipper) Open() {
 		return
 	}
 	f.isOpen = true
-	log.Debugf("Open: %s", f.motor.String())
+	f.logger.Debugf("Open: %s", f.motor.String())
 	defer log.Debugf("Open: %s completed", f.motor.String())
 	f.motor.SetSpeedSetpoint(-velocity).SetTimeSetpoint(3 * time.Second).Command("run-timed")
 	t := time.NewTicker(2 * time.Second)
 	<-t.C
 	f.Stop()
-	log.Debugf("wait: %s\n", f.motor.String())
+	f.logger.Debugf("wait: %s\n", f.motor.String())
 }
 
 func (f *Flipper) Close() {
 	if !f.isOpen {
 		return
 	}
-	log.Debugf("Close\n")
+	f.logger.Debugf("Close\n")
 	f.motor.SetSpeedSetpoint(velocity).SetTimeSetpoint(3 * time.Second).Command("run-timed")
 	t := time.NewTicker(5 * time.Second)
 	<-t.C
@@ -68,6 +73,6 @@ func (f *Flipper) IsOpened() bool {
 }
 
 func (f *Flipper) Reset() {
-	log.Debugf("Reset")
+	f.logger.Debugf("Reset")
 	f.motor.Command("reset")
 }
