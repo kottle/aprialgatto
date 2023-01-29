@@ -3,7 +3,6 @@ package motors
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -47,23 +46,6 @@ func (g *Gate) Stop() {
 	})
 }
 
-func wStop(motor *ev3dev.TachoMotor, g *sync.WaitGroup) {
-	log.Debugf("routine: %s\n", motor.String())
-	pos := 0
-	for {
-		p, _ := motor.Position()
-		log.Infof("%s pos: %d %d\n", motor.String(), pos, p)
-		if pos == p {
-			log.Infof("%s stop!\n", motor.String())
-			motor.Command("stop")
-			g.Done()
-			return
-		}
-		time.Sleep(time.Second * 1)
-		pos = p
-	}
-}
-
 func (g *Gate) Open() {
 	if g.isOpen {
 		return
@@ -74,7 +56,6 @@ func (g *Gate) Open() {
 	g.exec(func(m *ev3dev.TachoMotor) {
 		log.Debugf("Open: %s\n", m.String())
 		m.SetSpeedSetpoint(100).Command("run-forever")
-		wg.Add(1)
 		go wStop(m, &wg)
 	})
 	wg.Wait()
@@ -88,11 +69,11 @@ func (g *Gate) Close() {
 	wg := sync.WaitGroup{}
 	g.exec(func(m *ev3dev.TachoMotor) {
 		m.SetSpeedSetpoint(-100).Command("run-forever")
-		wg.Add(1)
 		go wStop(m, &wg)
 	})
 	wg.Wait()
 	g.isOpen = false
+	g.Reset()
 }
 
 func (g *Gate) exec(callback func(m *ev3dev.TachoMotor)) {
@@ -103,4 +84,10 @@ func (g *Gate) exec(callback func(m *ev3dev.TachoMotor)) {
 
 func (g *Gate) IsOpened() bool {
 	return g.isOpen
+}
+func (g *Gate) Reset() {
+	log.Debugf("Reset")
+	g.exec(func(m *ev3dev.TachoMotor) {
+		m.Command("reset")
+	})
 }

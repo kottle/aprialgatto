@@ -1,4 +1,4 @@
-package server
+package detection
 
 import (
 	"context"
@@ -97,6 +97,7 @@ func (s *Service) OnDetectObject(res *api.OnDetectRes, css api.DetectionService_
 }
 
 func onObjectNear() {
+	logrus.Debugf("detect object")
 	core.GetCore().SendMessage("detectObject", "detect")
 	/*	// gate.Open()
 		logrus.Infof("onObjectNear")
