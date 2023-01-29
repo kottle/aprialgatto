@@ -62,6 +62,7 @@ func (p *ProximityColor) Run(ctx context.Context) {
 			}
 			if prevFound != foundIt && foundIt {
 				core.GetCore().GetEventBus().Publish(core.OPEN_CAMERA)
+				return
 			}
 		}
 	}

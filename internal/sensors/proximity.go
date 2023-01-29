@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aprialgatto/internal/core"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
@@ -24,6 +23,9 @@ func (p *Proximity) Init(t int) {
 }
 
 func (p *Proximity) Run(ctx context.Context) {
+	p.logger.Debugf("Run proximity routine")
+	defer p.logger.Debugf("Ended proximity routine")
+
 	ticker := time.NewTicker(1 * time.Second)
 	foundIt := false
 	for {
@@ -33,23 +35,25 @@ func (p *Proximity) Run(ctx context.Context) {
 		case <-ticker.C:
 			v, err := p.sensor.Value(0)
 			if err != nil {
-				p.logger.Errorf("error reading value: %v\n", err)
+				p.logger.Errorf("error reading value: %v", err)
 				continue
 			}
 			value, err := strconv.Atoi(v)
 			if err != nil {
-				p.logger.Errorf("error reading value: %v\n", err)
+				p.logger.Errorf("error reading value: %v", err)
 				continue
 			}
-			p.logger.Infof("proximity value: %d pct\n", value)
+			p.logger.Infof("proximity value: %d pct", value)
 			prevFound := foundIt
-			if p.threshold <= value {
+			if value >= p.threshold {
 				foundIt = true
 			} else {
 				foundIt = false
 			}
+			p.logger.Infof("%v %v %v %v", prevFound, foundIt, p.threshold, value)
 			if prevFound != foundIt && foundIt {
-				core.GetCore().GetEventBus().Publish(core.OPEN_CAMERA)
+				p.logger.Infof("trigger action")
+				//core.GetCore().GetEventBus().Publish(core.CLOSE_GATE)
 			}
 		}
 	}

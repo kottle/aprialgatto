@@ -9,6 +9,7 @@ require (
 	github.com/ev3go/ev3dev v0.0.0-20190227024546-c501d6abb73b
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
+	github.com/looplab/fsm v1.0.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1

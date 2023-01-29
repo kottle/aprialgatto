@@ -1,0 +1,42 @@
+package fsm
+
+import (
+	"fmt"
+	"testing"
+)
+
+var ifsm FiniteStateMachine
+
+func init() {
+	ifsm = FiniteStateMachine{
+		Initial: "locked",
+		StateMap: StateMap{
+			"locked": Transition{
+				"coin": Action{
+					Destination: "unlocked",
+				},
+				"push": Action{
+					Destination: "locked",
+				},
+			},
+			"unlocked": Transition{
+				"coin": Action{
+					Destination: "unlocked",
+				},
+				"push": Action{
+					Destination: "locked",
+				},
+			},
+		},
+	}
+}
+
+func TestFsm(t *testing.T) {
+	for _, event := range []Event{"coin", "coin", "push", "push"} {
+		err := ifsm.Transition(event)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(ifsm.Current())
+	}
+}

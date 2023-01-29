@@ -16,6 +16,7 @@ var OBJECT_NEAR string = "obj_near"
 var DETECTED_OBJ string = "obj_detected"
 var OPEN_CAMERA string = "obj_open_camera"
 var CLOSE_CAMERA string = "obj_close_camera"
+var CLOSE_GATE string = "obj_close_gate"
 
 var lock = &sync.Mutex{}
 
